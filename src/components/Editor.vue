@@ -10,6 +10,7 @@
         :title="item.showTitle ? item.title : ''"
       >
         <EditorItem
+          :key="component_key"
           :title="item.title"
           :language="item.language"
           :codeTheme="codeTheme"
@@ -21,6 +22,7 @@
           :showAllAddResourcesBtn="['vue2', 'vue3'].includes(item.language)"
           :showHeader="showHeader"
           :readOnly="readOnly"
+          :chatbot_output=chatbot_output
           @code-change="
             code => {
               codeChange(item, code)
@@ -65,9 +67,21 @@
       :codeFontSize="codeFontSize"
     ></EditImportMap>
   </div>
+  <div class="Testing div">
+    <input type="text" ref="chatbot_input" id="chatbot_input" />
+    <button @click="displayMessage">Display Message</button>
+  </div>
 </template>
 
 <script setup>
+
+let chatbot_output = null
+let component_key = 0
+
+const force_component_reload = () => {
+  component_key += 1
+}
+
 import {
   ref,
   defineProps,
@@ -417,6 +431,64 @@ onMounted(async () => {
   show.value = true
   runCode()
 })
+
+// Openai api stuff
+
+import {Configuration, OpenAIApi} from 'openai';
+// import dotenv from 'dotenv';
+// dotenv.config();
+
+const get_openai_response = async (message) => {
+
+  const configuration = new Configuration({
+    apiKey: process.env.VUE_APP_OPENAI_API_KEY,
+  });
+  const openai = new OpenAIApi(configuration);
+
+
+  const user_input = message;
+
+  try {
+    const completion = await openai.createChatCompletion({
+      model: "gpt-3.5-turbo",
+      messages: [{
+        "role": "user",
+        "content": user_input
+      }],
+    });
+
+    const completion_text = completion.data.choices[0].message.content;
+    console.log(completion_text);
+
+    return completion_text;
+
+
+  } catch (error) {
+    if (error.response) {
+      console.error(error.response.status);
+      console.error(error.response.data);
+    } else {
+      console.error(error.message);
+    }
+  }
+  return null;
+}
+
+
+const displayMessage = async () => {
+  // const message = this.$refs.chatbot_input.value;
+  const message = document.getElementById("chatbot_input").value;
+  console.log('parent class', message);
+  // send this to chatgpt api
+
+  response = await get_openai_response(message);
+  console.log({response})
+  chatbot_output = message // Should be converted to response later
+  force_component_reload();
+}
+
+
+
 </script>
 
 <style lang="less" scoped>

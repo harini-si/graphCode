@@ -1,6 +1,9 @@
 <template>
   <div class="editorItem" ref="editorItem">
     <div class="editorContent">
+      <div>
+        <input type="text" name="" id="child_text_box">
+      </div>
       <div class="editorContentHeader" v-if="showHeader">
         <div class="title" :class="[{ rotate: noSpace }, dir]">{{ title }}</div>
         <div class="right">
@@ -123,7 +126,8 @@ import {
   onMounted,
   watch,
   nextTick,
-  defineEmits
+  defineEmits,
+  computed
 } from 'vue'
 import ResizeObserver from 'resize-observer-polyfill'
 import {
@@ -155,6 +159,10 @@ const props = defineProps({
     default() {
       return []
     }
+  },
+  chatbot_output: {
+    type: String,
+    default: ''
   },
   title: {
     type: String,
@@ -510,6 +518,21 @@ const { dropdownList, onDropdownClick } = useDropdown({
   createCodeImg,
   openLocalFile
 })
+
+// const computed_chatbot_output = computed(() => {
+//   return props.chatbot_output.value
+// })
+console.log('child class', props.chatbot_output)
+
+watch(
+  () => {
+    return props.chatbot_output
+  },
+  () => {
+    console.log('child class', props.chatbot_output)
+  }
+)
+
 </script>
 
 <style scoped lang="less">
