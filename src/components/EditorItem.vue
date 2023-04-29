@@ -2,7 +2,9 @@
   <div class="editorItem" ref="editorItem">
     <div class="editorContent">
       <div>
+        
         <input type="text" name="" id="child_text_box">
+        
       </div>
       <div class="editorContentHeader" v-if="showHeader">
         <div class="title" :class="[{ rotate: noSpace }, dir]">{{ title }}</div>
@@ -113,7 +115,9 @@
           ></Dropdown>
         </div>
       </div>
-      <div class="editorContentBody" ref="editorEl"></div>
+      <div class="editorContentBody" ref="editorEl">
+        <p>{{latestBotresponse}}</p>
+      </div>
     </div>
   </div>
 </template>
@@ -140,7 +144,8 @@ import { ElTooltip, ElSelect, ElOption, ElPopover } from 'element-plus'
 import * as monaco from 'monaco-editor/esm/vs/editor/editor.api'
 import { wire } from '@/utils/monacoEditor'
 import Dropdown from './Dropdown'
-
+import Chat from './Chat.vue'
+import {latestBotresponse} from '@/components/Chat.vue';
 // 触发事件
 const emit = defineEmits([
   'preprocessor-change',
@@ -620,6 +625,12 @@ watch(
     .editorContentBody {
       width: 100%;
       height: 100%;
+      
+      text-align: left;
+      
+      color: white;
+
+      
     }
   }
 }

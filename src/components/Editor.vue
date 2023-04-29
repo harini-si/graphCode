@@ -2,6 +2,7 @@
   <div class="editorBox" :class="{ hide: hide }">
     <Drag v-if="show" :number="editorItemList.length" :dir="dir">
       <Chat> </Chat>
+      
       <DragItem
         v-for="(item, index) in editorItemList"
         :key="item.title"
@@ -94,7 +95,7 @@ import * as monaco from 'monaco-editor/esm/vs/editor/editor.api'
 import CodeToImg from '@/components/CodeToImg.vue'
 import EditImportMap from './EditImportMap.vue'
 import EditAssets from './EditAssets.vue'
-
+import {latestBotresponse} from '@/components/Chat.vue';
 // props
 const props = defineProps({
   // 是否隐藏编辑器
@@ -423,10 +424,7 @@ onMounted(async () => {
   runCode()
 })
 
-// Openai api stuff
 
-// import dotenv from 'dotenv';
-// dotenv.config();
 </script>
 
 <style lang="less" scoped>
