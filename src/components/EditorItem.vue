@@ -110,7 +110,7 @@
           ></Dropdown>
         </div>
       </div>
-      <div class="editorContentBody" ref="editorEl">
+      <div class="editorContentBody" ref=" ">
         <p>{{latestBotresponse}}</p>
       </div>
     </div>
