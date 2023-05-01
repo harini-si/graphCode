@@ -1,9 +1,7 @@
 <template>
   <div class="editorItem" ref="editorItem">
     <div class="editorContent">
-      <div>
-        <input type="text" name="" id="child_text_box" />
-      </div>
+      
       <div class="editorContentHeader" v-if="showHeader">
         <div class="title" :class="[{ rotate: noSpace }, dir]">{{ title }}</div>
         <div class="right">
