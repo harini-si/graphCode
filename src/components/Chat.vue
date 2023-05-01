@@ -35,12 +35,13 @@
 </template>
 
 <script>
-import { ref } from 'vue'
+import { proxyRefs, ref } from 'vue'
 import { Configuration, OpenAIApi } from 'openai'
-export const latestBotresponse = ref('')
+
+export const latestBotResponse = ref('')
+
 export default {
   name: 'Chat',
-
   setup() {
     const chatbot_output = ref(null)
     const message = ref('')
@@ -82,24 +83,24 @@ export default {
     const displayMessage = async () => {
       const user_message = message.value
       const bot_response = await get_openai_response(user_message)
-      latestBotresponse.value = bot_response.content
+
+      // When the function is called, emit the latest bot response
+
+      latestBotResponse.value = bot_response.content
+
       messages.value.push({ role: 'user', content: user_message })
       messages.value.push(bot_response)
 
       chatbot_output.value = bot_response.content
       message.value = ''
-      
     }
-
-    const sendMessage = () => {}
-    
 
     return {
       displayMessage,
-      sendMessage,
       chatbot_output,
       messages,
-      message
+      message,
+      latestBotResponse
     }
   }
 }

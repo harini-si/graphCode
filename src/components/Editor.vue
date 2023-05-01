@@ -2,7 +2,7 @@
   <div class="editorBox" :class="{ hide: hide }">
     <Drag v-if="show" :number="editorItemList.length" :dir="dir">
       <Chat> </Chat>
-      
+
       <DragItem
         v-for="(item, index) in editorItemList"
         :key="item.title"
@@ -53,16 +53,16 @@
         ></EditorItem>
       </DragItem>
     </Drag>
-    <!-- 资源管理弹窗 -->
+
     <EditAssets ref="EditAssetsComp"></EditAssets>
-    <!-- 生成代码图片 -->
+
     <CodeToImg
       ref="CodeToImgComp"
       :getThemeData="getThemeData"
       :codeTheme="codeTheme"
       :codeFontSize="codeFontSize"
     ></CodeToImg>
-    <!-- importmap编辑 -->
+
     <EditImportMap
       :codeTheme="codeTheme"
       :codeFontSize="codeFontSize"
@@ -95,45 +95,43 @@ import * as monaco from 'monaco-editor/esm/vs/editor/editor.api'
 import CodeToImg from '@/components/CodeToImg.vue'
 import EditImportMap from './EditImportMap.vue'
 import EditAssets from './EditAssets.vue'
-import {latestBotresponse} from '@/components/Chat.vue';
+
 // props
 const props = defineProps({
-  // 是否隐藏编辑器
   hide: {
     type: Boolean,
     default: false
   },
-  // 排布方向
+
   dir: {
     type: String,
-    default: 'h' // v（垂直）、h（水平）
+    default: 'h'
   },
-  // 要显示的编辑器列表
+
   showList: {
     type: Array,
     default() {
       return ['HTML', 'CSS', 'JS']
-    } // 目前共有四种编辑器：'HTML'、 'CSS'、 'JS'、 'VUE'
+    }
   },
-  // 是否要显示编辑器的头部
   showHeader: {
     type: Boolean,
     default: true
   },
-  // 不要触发代码运行
   notRunCode: {
     type: Boolean,
     default: false
   },
-  // 编辑器只读
   readOnly: {
     type: Boolean,
     default: false
+  },
+  showChat: {
+    type: Boolean,
+    default: true
   }
 })
 
-// hooks定义部分
-// 初始化数据
 const useInit = () => {
   const store = useStore()
   return {
@@ -145,13 +143,11 @@ const useInit = () => {
   }
 }
 
-// 初始化编辑器列表
 const useInitEditorList = ({ props, editData }) => {
   let show = ref(false)
-  // 编辑器列表
+
   let editorItemList = ref([])
 
-  // 初始化编辑器列表数据
   const initEditorItemList = () => {
     editorItemList = ref(
       props.showList.map(item => {
@@ -172,7 +168,6 @@ const useInitEditorList = ({ props, editData }) => {
   }
   initEditorItemList()
 
-  // 数据变化后重新初始化
   watch(
     () => {
       return props.showList
@@ -183,7 +178,6 @@ const useInitEditorList = ({ props, editData }) => {
     }
   )
 
-  // 设置编辑器列表初始数据
   const setInitData = () => {
     const code = editData.value.code
     Object.keys(code).forEach(type => {
@@ -219,11 +213,9 @@ const useTheme = ({ codeTheme, proxy }) => {
         return
       }
       if (item.custom) {
-        // 该主题已加载，直接使用缓存
         if (item.loaded) {
           themeData = item.cache
         } else {
-          // 未加载，则先加载
           themeData = await (
             await fetch(`${base}themes/${codeTheme.value}.json`)
           ).json()
@@ -240,12 +232,10 @@ const useTheme = ({ codeTheme, proxy }) => {
     }
   }
 
-  // 获取主题数据
   const getThemeData = () => {
     return themeData
   }
 
-  // 监听设置代码主题
   watch(codeTheme, () => {
     loadTheme()
   })
@@ -256,14 +246,11 @@ const useTheme = ({ codeTheme, proxy }) => {
   }
 }
 
-// 代码运行
 const useRunCode = ({ store, proxy }) => {
-  // 布局
   const layout = computed(() => {
     return store.state.editData.config.layout
   })
 
-  // 发送运行代码的通知
   const runCode = () => {
     if (props.notRunCode) return
     proxy.$eventEmitter.emit('run')
@@ -274,7 +261,6 @@ const useRunCode = ({ store, proxy }) => {
 
   proxy.$eventEmitter.on('run-code', runCode)
 
-  // 开启关闭全能console后重新运行代码
   const openAlmightyConsole = computed(() => {
     return store.state.editData.config.openAlmightyConsole
   })
@@ -292,7 +278,6 @@ const useRunCode = ({ store, proxy }) => {
   }
 }
 
-// 代码编辑器状态改变
 const useEditorChange = ({
   setInitData,
   store,
@@ -302,7 +287,6 @@ const useEditorChange = ({
   editData,
   proxy
 }) => {
-  // 重新设置代码数据
   const resetCode = () => {
     setInitData()
     runCode()
@@ -312,7 +296,6 @@ const useEditorChange = ({
     proxy.$eventEmitter.off('reset_code', resetCode)
   })
 
-  // 代码修改事件
   const codeChange = (item, code) => {
     store.commit('setCodeContent', {
       type: item.title,
@@ -321,14 +304,12 @@ const useEditorChange = ({
     autoRun()
   }
 
-  // 获取指定语言的数据
   const getIndexByType = type => {
     return editorItemList.value.findIndex(item => {
       return item.title === type
     })
   }
 
-  // 修改预处理器
   const preprocessorChange = (item, p) => {
     let index = getIndexByType(item.title)
     editorItemList.value[index].language = p
@@ -348,7 +329,6 @@ const useEditorChange = ({
   }
 }
 
-// 自动运行
 const useAutoRun = ({ store, runCode }) => {
   let autoRunTimer = null
   const isAutoRun = computed(() => {
@@ -368,10 +348,8 @@ const useAutoRun = ({ store, runCode }) => {
   }
 }
 
-// 生成代码图片
 const CodeToImgComp = ref(null)
 const useCodeToImg = () => {
-  // 显示设置弹窗
   const showCreateCodeImg = (_editor, item) => {
     CodeToImgComp.value.showCreateCodeImg(_editor, item)
   }
@@ -381,7 +359,6 @@ const useCodeToImg = () => {
   }
 }
 
-// 资源管理
 const EditAssetsComp = ref(null)
 const useAssets = () => {
   const addResource = (...args) => {
@@ -424,7 +401,10 @@ onMounted(async () => {
   runCode()
 })
 
+// Openai api stuff
 
+// import dotenv from 'dotenv';
+// dotenv.config();
 </script>
 
 <style lang="less" scoped>

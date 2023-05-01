@@ -1,6 +1,9 @@
 <template>
   <div class="editorItem" ref="editorItem">
     <div class="editorContent">
+      <div>
+        <input type="text" name="" id="child_text_box" />
+      </div>
       <div class="editorContentHeader" v-if="showHeader">
         <div class="title" :class="[{ rotate: noSpace }, dir]">{{ title }}</div>
         <div class="right">
@@ -16,10 +19,13 @@
                 <span class="iconfont icon-tishi"></span>
               </div>
             </template>
-            support ES6 syntax. <a
+            support ES6 syntax.
+            <a
               href="https://github.com/wanglin2/code-run#关于使用ESM"
               target="_blank"
-              >Click</a> to learn more.
+              >Click</a
+            >
+            to learn more.
           </el-popover>
 
           <!-- 格式化按钮 -->
@@ -110,9 +116,7 @@
           ></Dropdown>
         </div>
       </div>
-      <div class="editorContentBody" ref=" ">
-        <p>{{latestBotresponse}}</p>
-      </div>
+      <div class="editorContentBody" ref="editorEl"></div>
     </div>
   </div>
 </template>
@@ -125,8 +129,7 @@ import {
   onMounted,
   watch,
   nextTick,
-  defineEmits,
-  computed
+  defineEmits
 } from 'vue'
 import ResizeObserver from 'resize-observer-polyfill'
 import {
@@ -136,11 +139,11 @@ import {
   supportESModuleMap
 } from '@/config/constants'
 import { ElTooltip, ElSelect, ElOption, ElPopover } from 'element-plus'
+import { latestBotResponse } from '@/components/Chat'
 import * as monaco from 'monaco-editor/esm/vs/editor/editor.api'
 import { wire } from '@/utils/monacoEditor'
 import Dropdown from './Dropdown'
-import Chat from './Chat.vue'
-import {latestBotresponse} from '@/components/Chat.vue';
+
 // 触发事件
 const emit = defineEmits([
   'preprocessor-change',
@@ -159,10 +162,6 @@ const props = defineProps({
     default() {
       return []
     }
-  },
-  chatbot_output: {
-    type: String,
-    default: ''
   },
   title: {
     type: String,
@@ -203,6 +202,10 @@ const props = defineProps({
   readOnly: {
     type: Boolean,
     default: false
+  },
+  latestBotResponse: {
+    type: String,
+    default: ''
   }
 })
 
@@ -212,6 +215,9 @@ const props = defineProps({
 let editor = null // 编辑器实例
 // 编辑器容器
 const editorEl = ref(null)
+
+const latestBotResponseRef = ref(latestBotResponse)
+
 const useCreateEditor = ({ props, emit, updateDoc }) => {
   // 创建编辑器
   const createEditor = async () => {
@@ -231,7 +237,15 @@ const useCreateEditor = ({ props, emit, updateDoc }) => {
         readOnly: props.readOnly
       })
       // 设置文档内容
+
       updateDoc(props.content, props.language)
+      watch(latestBotResponse, () => {
+        latestBotResponseRef.value = latestBotResponse.value
+
+        if (props.language === 'javascript')
+          //updateDoc(latestBotResponseRef.value, props.language)
+          editor.setValue(latestBotResponseRef.value)
+      })
       // 支持textMate语法解析
       wire(props.language, editor)
       // 监听编辑事件
@@ -304,7 +318,7 @@ const useSizeChange = ({ props }) => {
           return
         }
         let { width, height } = editorItem.value.getBoundingClientRect()
-        // 宽度小于100像素则旋转标题
+
         noSpace.value = (props.dir === 'h' ? width : height) <= 100
         emit('space-change', noSpace.value)
         editor && editor.layout()
@@ -313,7 +327,6 @@ const useSizeChange = ({ props }) => {
     }, 100)
   }
 
-  // 监听dom大小变化
   const ro = new ResizeObserver(entries => {
     for (const entry of entries) {
       if (entry.target.classList.contains('dragItem')) {
@@ -322,12 +335,10 @@ const useSizeChange = ({ props }) => {
     }
   })
 
-  // 挂载完成
   onMounted(() => {
     ro.observe(editorItem.value.parentNode)
   })
 
-  // 即将解除挂载
   onBeforeUnmount(() => {
     ro.unobserve(editorItem.value.parentNode)
   })
@@ -337,15 +348,15 @@ const useSizeChange = ({ props }) => {
   }
 }
 
-// 处理文档内容
 const useDoc = ({ props }) => {
-  // 更新编辑器文档模型
   const updateDoc = (code, language) => {
     if (!editor) {
       return
     }
+
     let oldModel = editor.getModel()
     let newModel = monaco.editor.createModel(code, supportLanguage[language])
+
     editor.setModel(newModel)
     if (oldModel) {
       oldModel.dispose()
@@ -532,7 +543,6 @@ watch(
     console.log('child class', props.chatbot_output)
   }
 )
-
 </script>
 
 <style scoped lang="less">
@@ -620,12 +630,6 @@ watch(
     .editorContentBody {
       width: 100%;
       height: 100%;
-      
-      text-align: left;
-      
-      color: white;
-
-      
     }
   }
 }

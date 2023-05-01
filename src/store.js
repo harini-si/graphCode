@@ -1,6 +1,7 @@
 import { createStore } from 'vuex'
 import { generateUUID } from '@/utils'
 import { create, request } from '@/utils/octokit'
+import { latestBotResponse } from '@/components/Chat'
 // 存储github token的本地存储的key
 const githubTokenSaveKey = 'codeRun:githubToken'
 
